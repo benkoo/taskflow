@@ -10,11 +10,15 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/react": "^4.2.7",
     "@vite-pwa/astro": "^1.1.0",
     "astro": "^5.7.13",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "workbox-window": "^7.3.0"
   },
   "devDependencies": {
+    "@astrojs/tailwind": "^6.0.2",
     "@tailwindcss/vite": "^4.1.7",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
