@@ -1,0 +1,139 @@
+---
+// This component handles the PWA installation prompt
+const title = 'Install TaskFlow';
+const description = 'Add TaskFlow to your home screen for quick access and an app-like experience.';
+const buttonText = 'Install';
+
+// Define the BeforeInstallPromptEvent type
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
+declare global {
+  interface Window {
+    deferredPrompt?: BeforeInstallPromptEvent;
+  }
+}
+---
+
+<div id="installContainer" class="fixed bottom-4 right-4 z-50 hidden">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 max-w-xs">
+    <div class="flex items-start">
+      <div class="flex-shrink-0 pt-0.5">
+        <img src="/icons/icon-192x192.png" alt="TaskFlow" class="w-10 h-10 rounded-lg" />
+      </div>
+      <div class="ml-3">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {description}
+        </p>
+        <div class="mt-4 flex gap-2">
+          <button
+            id="installButton"
+            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            {buttonText}
+          </button>
+          <button
+            id="dismissButton"
+            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Check if the browser supports service workers and PWA installation
+  if ('serviceWorker' in navigator && window.matchMedia('(display-mode: standalone)').matches === false) {
+    // Get DOM elements with type safety
+    const installContainer = document.getElementById('installContainer');
+    const installButton = document.getElementById('installButton');
+    const dismissButton = document.getElementById('dismissButton');
+
+    // Check if elements exist before using them
+    if (installContainer && installButton && dismissButton) {
+      // Check if the app is already installed or if the prompt was dismissed
+      const isAppInstalled = localStorage.getItem('appInstalled') === 'true';
+      const isPromptDismissed = localStorage.getItem('installPromptDismissed') === 'true';
+
+      if (!isAppInstalled && !isPromptDismissed) {
+        // Show the install prompt
+        window.addEventListener('beforeinstallprompt', (e: Event) => {
+          // Cast the event to any to avoid TypeScript errors
+          const beforeInstallPromptEvent = e as any;
+          
+          // Prevent the mini-infobar from appearing on mobile
+          beforeInstallPromptEvent.preventDefault();
+          
+          // Store the event for later use
+          window.deferredPrompt = beforeInstallPromptEvent;
+          
+          // Show the install UI
+          installContainer.classList.remove('hidden');
+          installContainer.classList.add('block');
+        });
+
+        // Handle install button click
+        installButton.addEventListener('click', async () => {
+          if (!window.deferredPrompt) return;
+          
+          try {
+            // Show the install prompt
+            window.deferredPrompt.prompt();
+            
+            // Wait for the user to respond to the prompt
+            const { outcome } = await window.deferredPrompt.userChoice;
+            
+            // Log the user's response
+            console.log(`User response to the install prompt: ${outcome}`);
+            
+            // We've used the prompt, and can't use it again, throw it away
+            window.deferredPrompt = undefined;
+            
+            // Hide the install UI
+            installContainer.classList.add('hidden');
+            
+            // Mark the app as installed
+            localStorage.setItem('appInstalled', 'true');
+            
+            // Track the installation (you can replace this with your analytics)
+            if (outcome === 'accepted') {
+              console.log('User accepted the install prompt');
+            } else {
+              console.log('User dismissed the install prompt');
+            }
+          } catch (error) {
+            console.error('Error showing install prompt:', error);
+          }
+        });
+
+        // Handle dismiss button click
+        dismissButton.addEventListener('click', () => {
+          // Hide the install UI
+          installContainer.classList.add('hidden');
+          
+          // Set a flag to not show the prompt again for a week
+          localStorage.setItem('installPromptDismissed', 'true');
+          
+          // Set a timeout to show the prompt again after a week
+          setTimeout(() => {
+            localStorage.removeItem('installPromptDismissed');
+          }, 7 * 24 * 60 * 60 * 1000);
+        });
+      }
+    } else {
+      console.warn('Could not find required DOM elements for PWA install prompt');
+    }
+  } else {
+    console.log('PWA install prompt not shown - either service workers are not supported or the app is already installed');
+  }
+</script>

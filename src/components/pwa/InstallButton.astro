@@ -1,0 +1,196 @@
+---
+// This component handles PWA installation
+interface Props {
+  className?: string;
+  showInstructions?: boolean;
+}
+
+const { className = '', showInstructions = true } = Astro.props;
+---
+
+<button 
+  id="install-button" 
+  class:list={[
+    'bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition-colors',
+    className
+  ]}
+  data-pwa-install
+  style="display: none;"
+>
+  Install App
+</button>
+
+{showInstructions && (
+  <div class="mt-2 space-y-2">
+    <p class="text-sm text-gray-600" id="install-instructions">
+      Checking installation status...
+    </p>
+    <p class="text-xs text-gray-500" id="debug-info"></p>
+  </div>
+)}
+
+<script>
+  // Type for the beforeinstallprompt event
+  type InstallOutcome = 'accepted' | 'dismissed';
+  
+  interface PWAInstallPromptEvent extends Event {
+    prompt: () => Promise<{ outcome: InstallOutcome }>;
+    userChoice: Promise<{ outcome: InstallOutcome }>;
+  }
+
+  // Extend the Window interface
+  interface CustomWindow extends Window {
+    handleInstallClick: () => Promise<void>;
+    beforeInstallPromptEvent?: PWAInstallPromptEvent;
+  }
+  
+  // Cast window to our custom type for TypeScript
+  const customWindow = window as unknown as CustomWindow;
+  
+  // Make handleInstallClick available globally
+  window.handleInstallClick = async () => {
+    if (customWindow.beforeInstallPromptEvent) {
+      try {
+        customWindow.beforeInstallPromptEvent.prompt();
+        const { outcome } = await customWindow.beforeInstallPromptEvent.userChoice;
+        console.log('User response to install prompt:', outcome);
+      } catch (error) {
+        console.error('Error handling install prompt:', error);
+      }
+    }
+  };
+
+  // Function to update the UI based on installation state
+  function updateUI(showButton: boolean, message: string) {
+    const installButton = document.getElementById('install-button') as HTMLButtonElement | null;
+    const installInstructions = document.getElementById('install-instructions');
+    const debugInfo = document.getElementById('debug-info');
+    
+    // Update button visibility
+    if (installButton) {
+      installButton.style.display = showButton ? 'inline-flex' : 'none';
+    }
+    
+    // Update instructions text
+    if (installInstructions) {
+      installInstructions.textContent = message;
+    }
+    
+    // Log the current state for debugging
+    const state = {
+      showButton,
+      message,
+      isSecureContext: window.isSecureContext,
+      locationProtocol: window.location.protocol,
+      locationHostname: window.location.hostname,
+      navigatorStandalone: (navigator as any).standalone,
+      matchMediaStandalone: window.matchMedia('(display-mode: standalone)').matches,
+      hasPrompt: !!customWindow.beforeInstallPromptEvent,
+      isInstalled: window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('PWA Installation State:', state);
+    
+    // Update debug info if available
+    if (debugInfo) {
+      const debugContent = Object.entries(state)
+        .map(([key, value]) => {
+          // Format the value for display
+          let displayValue = value;
+          if (typeof value === 'boolean') {
+            displayValue = value ? '✅' : '❌';
+          } else if (value === null || value === undefined) {
+            displayValue = 'N/A';
+          }
+          return `${key}: <strong>${displayValue}</strong>`;
+        })
+        .join('<br>');
+      debugInfo.innerHTML = debugContent;
+    }
+  }
+
+  // Handle install button click
+  customWindow.handleInstallClick = async () => {
+    if (customWindow.beforeInstallPromptEvent) {
+      try {
+        // Show the install prompt
+        customWindow.beforeInstallPromptEvent.prompt();
+        
+        // Wait for the user to respond to the prompt
+        const { outcome } = await customWindow.beforeInstallPromptEvent.userChoice;
+        
+        // Log the result
+        console.log(`User ${outcome} the install prompt`);
+        
+        if (outcome === 'accepted') {
+          updateUI(false, 'Installing...');
+        } else {
+          updateUI(true, 'Installation was declined');
+        }
+      } catch (error) {
+        console.error('Error handling install prompt:', error);
+        updateUI(true, 'Error during installation. Please try again.');
+      }
+    } else {
+      // If we get here, we couldn't trigger the install prompt
+      updateUI(
+        true,
+        'Installation not available. Try using the browser menu (⋮ > Install App)'
+      );
+      
+      // Log the state for debugging
+      console.log('Install button clicked but no prompt available');
+    }
+  };
+
+  // Handle the app installed event
+  function handleAppInstalled() {
+    console.log('App was installed');
+    updateUI(false, 'App installed successfully!');
+  }
+
+  // Handle the beforeinstallprompt event
+  function handleBeforeInstallPrompt(e: Event) {
+    e.preventDefault();
+    
+    // Store the event for later use
+    customWindow.beforeInstallPromptEvent = e as PWAInstallPromptEvent;
+    console.log('beforeinstallprompt event fired');
+    
+    // Update UI to show install button
+    updateUI(true, 'Click the install button to add to home screen');
+  }
+
+  // Initialize the component
+  document.addEventListener('DOMContentLoaded', () => {
+    const installButton = document.getElementById('install-button') as HTMLButtonElement | null;
+    
+    // Set up click handler for the install button
+    if (installButton) {
+      installButton.onclick = customWindow.handleInstallClick;
+    }
+    
+    // Check if the app is already installed
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                       (navigator as any).standalone;
+    
+    if (isInstalled) {
+      updateUI(false, 'App is already installed!');
+    } else if (customWindow.beforeInstallPromptEvent) {
+      updateUI(true, 'Click the install button to add to home screen');
+    } else {
+      updateUI(false, 'Installation not yet available. Please wait...');
+    }
+    
+    // Add event listeners
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    
+    // Clean up event listeners on component unmount
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  });
+</script>

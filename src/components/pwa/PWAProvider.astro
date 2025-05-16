@@ -1,0 +1,39 @@
+---
+// This component initializes PWA functionality and should be included in your layout
+import { registerServiceWorker } from '../../utils/registerServiceWorker';
+
+// Only run on the client
+if (typeof window !== 'undefined') {
+  // Register service worker
+  window.addEventListener('load', () => {
+    registerServiceWorker().catch(console.error);
+  });
+
+  // Listen for controllerchange to detect when a new service worker takes over
+  navigator.serviceWorker?.addEventListener('controllerchange', () => {
+    console.log('Service worker updated, reloading...');
+    window.location.reload();
+  });
+}
+---
+
+<slot />
+
+<script>
+  // This script runs in the browser
+  if ('serviceWorker' in navigator) {
+    // Handle messages from the service worker
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      console.log('Message from service worker:', event.data);
+      // You can add custom message handling here
+    });
+  }
+
+  // Check if the app is running in standalone mode
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                      (navigator as any).standalone;
+  
+  if (isStandalone) {
+    console.log('App is running in standalone mode');
+  }
+</script>
