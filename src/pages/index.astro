@@ -3,37 +3,14 @@
 import Layout from '../layouts/Layout.astro';
 import PWAProvider from '../components/pwa/PWAProvider.astro';
 import InstallButton from '../components/pwa/InstallButton.astro';
-
-
-// Get visitor count from localStorage or initialize with a random number
-const getVisitorCount = (): number => {
-  if (typeof window === 'undefined') return 0;
-  
-  try {
-    const VISITOR_COUNT_KEY = 'visitorCount';
-    const storedCount = localStorage.getItem(VISITOR_COUNT_KEY);
-    
-    let count = storedCount 
-      ? parseInt(storedCount, 10) + 1
-      : Math.floor(Math.random() * 50) + 50; // Random between 50-100 for initial visitors
-    
-    localStorage.setItem(VISITOR_COUNT_KEY, count.toString());
-    return count;
-  } catch (error) {
-    console.warn('Visitor counter disabled:', error);
-    return 42; // Fallback value
-  }
-};
-
-const visitorCount = getVisitorCount();
 ---
 
-<Layout title="TaskFlow - Install App">
+<Layout title="PWA Install Demo">
   <PWAProvider>
     <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome to TaskFlow</h1>
-        <p class="text-gray-600 mb-8">Click the button below to install the app on your device.</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">PWA Install Demo</h1>
+        <p class="text-gray-600 mb-8">Click the button below to install this PWA on your device.</p>
         
         <InstallButton 
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105"
@@ -42,7 +19,7 @@ const visitorCount = getVisitorCount();
         
         <div class="mt-8 pt-6 border-t border-gray-200">
           <p class="text-sm text-gray-500">
-            <span id="visitorCount" class="font-medium">{visitorCount}</span> people have tried this app
+            A demo of PWA installation functionality
           </p>
         </div>
       </div>

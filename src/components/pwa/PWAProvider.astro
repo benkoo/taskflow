@@ -1,39 +1,64 @@
 ---
-// This component initializes PWA functionality and should be included in your layout
+// This component initializes PWA functionality
 import { registerServiceWorker } from '../../utils/registerServiceWorker';
 
 // Only run on the client
 if (typeof window !== 'undefined') {
-  // Register service worker
-  window.addEventListener('load', () => {
-    registerServiceWorker().catch(console.error);
-  });
-
-  // Listen for controllerchange to detect when a new service worker takes over
-  navigator.serviceWorker?.addEventListener('controllerchange', () => {
-    console.log('Service worker updated, reloading...');
-    window.location.reload();
-  });
+  // Register service worker when the page loads
+  registerServiceWorker()
+    .then((registration) => {
+      if (registration) {
+        console.log('Service Worker registered successfully', registration);
+      } else {
+        console.error('Service Worker registration returned null');
+      }
+    })
+    .catch((error) => {
+      console.error('Failed to register Service Worker:', error);
+    });
 }
 ---
 
 <slot />
 
 <script>
-  // This script runs in the browser
-  if ('serviceWorker' in navigator) {
-    // Handle messages from the service worker
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      console.log('Message from service worker:', event.data);
-      // You can add custom message handling here
-    });
-  }
-
-  // Check if the app is running in standalone mode
+  // Log PWA installation status
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                       (navigator as any).standalone;
   
-  if (isStandalone) {
-    console.log('App is running in standalone mode');
+  console.log('PWA running in standalone mode:', isStandalone);
+
+  // Handle service worker messages
+  if ('serviceWorker' in navigator) {
+    // Log service worker state changes
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      console.log('Message from service worker:', event.data);
+    });
+
+    // Log when a new service worker is installed
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('New service worker activated, reloading...');
+      window.location.reload();
+    });
+
+    // Check if the service worker is controlling the page
+    if (navigator.serviceWorker.controller) {
+      console.log('Service Worker is controlling the page');
+    } else {
+      console.log('No Service Worker is controlling the page');
+    }
+  } else {
+    console.warn('Service workers are not supported in this browser');
   }
+
+  // Log PWA installation status
+  window.addEventListener('appinstalled', (event) => {
+    console.log('App was installed', event);
+  });
+
+  // Log beforeinstallprompt event
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('beforeinstallprompt event fired');
+    // Don't prevent default here, let the InstallButton component handle it
+  });
 </script>

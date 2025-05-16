@@ -1,4 +1,4 @@
-// Register the service worker
+// Register the service worker for the PWA demo
 export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
   if (!('serviceWorker' in navigator)) {
     console.warn('Service workers are not supported in this browser');
@@ -9,63 +9,62 @@ export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration
     // Unregister any existing service workers first
     const registrations = await navigator.serviceWorker.getRegistrations();
     for (const registration of registrations) {
+      console.log('Unregistering existing service worker:', registration.scope);
       await registration.unregister();
-      console.log('Unregistered old service worker');
     }
 
     // Clear all caches
-    const cacheKeys = await caches.keys();
-    await Promise.all(cacheKeys.map(key => caches.delete(key)));
-    console.log('Cleared all caches');
+    const cacheNames = await caches.keys();
+    await Promise.all(
+      cacheNames.map(cacheName => caches.delete(cacheName))
+    );
 
-    // Register the new service worker
+    // Register the service worker
+    console.log('Registering service worker...');
     const registration = await navigator.serviceWorker.register('/sw.js', {
       updateViaCache: 'none',
       scope: '/'
     });
 
-    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    console.log('ServiceWorker registered with scope:', registration.scope);
     
-    // Check for updates
+    // Wait for the service worker to be ready
+    await navigator.serviceWorker.ready;
+    console.log('Service Worker is ready to work offline');
+    
+    // Handle service worker updates
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
       if (!newWorker) return;
 
-      console.log('New service worker found:', newWorker);
-
       newWorker.addEventListener('statechange', () => {
         if (!newWorker) return;
-        console.log('Service worker state changed:', newWorker.state);
+        console.log('Service worker state:', newWorker.state);
 
         if (newWorker.state === 'installed') {
           if (navigator.serviceWorker.controller) {
-            // New update available
-            console.log('New content is available; please refresh.');
-            // Optional: Dispatch an event that the UI can listen to
+            console.log('New content available; please refresh.');
             window.dispatchEvent(new Event('sw-update'));
           } else {
-            // First install
-            console.log('Content is now available offline!');
+            console.log('App is now available offline!');
           }
         }
       });
     });
-    
-    // Ensure the service worker is properly controlling the page
-    if (registration.active) {
-      console.log('Service worker is active and ready');
-    }
-    
+
     return registration;
   } catch (error) {
-    console.error('ServiceWorker registration failed: ', error);
+    console.error('Service worker registration failed:', error);
     return null;
   }
 };
 
-// Initialize service worker when the page loads
+// Auto-initialize service worker in the browser
 if (typeof window !== 'undefined') {
+  console.log('Initializing service worker...');
   window.addEventListener('load', () => {
-    registerServiceWorker().catch(console.error);
+    registerServiceWorker().catch(error => {
+      console.error('Failed to register service worker:', error);
+    });
   });
 }
