@@ -1,13 +1,20 @@
-// Global TypeScript declarations
+// Global TypeScript declarations for PWA
 
 interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<{ outcome: 'accepted' | 'dismissed' }>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  prompt: () => Promise<void>;
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
 }
 
 declare global {
   interface Window {
-    handleInstallClick: () => Promise<void>;
+    // For PWA installation
+    deferredPrompt?: BeforeInstallPromptEvent;
+    
+    // For backward compatibility
+    handleInstallClick?: () => Promise<void>;
     beforeInstallPromptEvent?: BeforeInstallPromptEvent;
   }
 }

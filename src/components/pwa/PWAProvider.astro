@@ -1,34 +1,19 @@
 ---
 // This component initializes PWA functionality
-import { registerServiceWorker } from '../../utils/registerServiceWorker';
-
-// Only run on the client
-if (typeof window !== 'undefined') {
-  // Register service worker when the page loads
-  registerServiceWorker()
-    .then((registration) => {
-      if (registration) {
-        console.log('Service Worker registered successfully', registration);
-      } else {
-        console.error('Service Worker registration returned null');
-      }
-    })
-    .catch((error) => {
-      console.error('Failed to register Service Worker:', error);
-    });
-}
+// It handles service worker registration and PWA installation
 ---
 
 <slot />
 
 <script>
-  // Log PWA installation status
+  // Check if the app is running in standalone mode
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                      (navigator as any).standalone;
+                      (navigator as any).standalone ||
+                      (document.referrer && document.referrer.includes('android-app://'));
   
   console.log('PWA running in standalone mode:', isStandalone);
 
-  // Handle service worker messages
+  // Handle service worker messages and state
   if ('serviceWorker' in navigator) {
     // Log service worker state changes
     navigator.serviceWorker.addEventListener('message', (event) => {
@@ -41,24 +26,70 @@ if (typeof window !== 'undefined') {
       window.location.reload();
     });
 
-    // Check if the service worker is controlling the page
+    // Check if the service worker is already controlling the page
     if (navigator.serviceWorker.controller) {
       console.log('Service Worker is controlling the page');
     } else {
-      console.log('No Service Worker is controlling the page');
+      console.log('No Service Worker is controlling the page, registering...');
+      
+      // Register the service worker
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then((registration) => {
+          console.log('Service Worker registered with scope:', registration.scope);
+          
+          // Check if the service worker is actually controlling the page
+          if (navigator.serviceWorker.controller) {
+            console.log('Service Worker is now controlling the page');
+          } else {
+            console.log('Service Worker registered but not controlling the page yet');
+          }
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
     }
   } else {
     console.warn('Service workers are not supported in this browser');
+    
+    // Show a message to the user
+    const installButton = document.getElementById('install-button');
+    const installInstructions = document.getElementById('install-instructions');
+    
+    if (installButton && installInstructions) {
+      installButton.style.display = 'none';
+      installInstructions.textContent = 'This browser does not support PWA installation. Please try a modern browser like Chrome, Edge, or Firefox.';
+    }
   }
 
-  // Log PWA installation status
-  window.addEventListener('appinstalled', (event) => {
-    console.log('App was installed', event);
-  });
-
-  // Log beforeinstallprompt event
+  // Store the beforeinstallprompt event for later use
   window.addEventListener('beforeinstallprompt', (e) => {
     console.log('beforeinstallprompt event fired');
-    // Don't prevent default here, let the InstallButton component handle it
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    e.preventDefault();
+    
+    // Cast the event to BeforeInstallPromptEvent
+    const beforeInstallPromptEvent = e as unknown as BeforeInstallPromptEvent;
+    
+    // Stash the event so it can be triggered later
+    window.deferredPrompt = beforeInstallPromptEvent;
+    
+    // Show the install button if it exists
+    const installButton = document.getElementById('install-button');
+    if (installButton) {
+      installButton.style.display = 'inline-flex';
+    }
+  });
+
+  // Log successful installation
+  window.addEventListener('appinstalled', () => {
+    console.log('App was installed successfully');
+    // Hide the install button after installation
+    const installButton = document.getElementById('install-button');
+    if (installButton) {
+      installButton.style.display = 'none';
+    }
+    
+    // Clear the deferredPrompt so it can be garbage collected
+    window.deferredPrompt = undefined;
   });
 </script>

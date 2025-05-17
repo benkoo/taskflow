@@ -44,20 +44,27 @@ const { className = '', showInstructions = true } = Astro.props;
     }
   }
   
-  // Handle the beforeinstallprompt event
-  window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent the default prompt
-    e.preventDefault();
-    
-    // Store the event for later use
-    const deferredPrompt = e as any;
-    
-    // Show the install button
+  // Check if the app is already installed
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                      (navigator as any).standalone ||
+                      (document.referrer && document.referrer.includes('android-app://'));
+  
+  if (isStandalone) {
+    updateUI('App is installed and running in standalone mode');
     if (installButton) {
-      installButton.style.display = 'inline-flex';
-      
-      // Handle install button click
+      installButton.style.display = 'none';
+    }
+  } else {
+    // Handle install button click
+    if (installButton) {
       installButton.onclick = async () => {
+        const deferredPrompt = (window as any).deferredPrompt;
+        
+        if (!deferredPrompt) {
+          updateUI('Installation not available in this context', 'No installation event fired');
+          return;
+        }
+        
         try {
           // Show the install prompt
           deferredPrompt.prompt();
@@ -83,32 +90,9 @@ const { className = '', showInstructions = true } = Astro.props;
           updateUI('Error during installation', 'Check console for details');
         }
       };
-      
-      updateUI('Click the button above to install this PWA', 'Installation available');
     }
     
-    console.log('beforeinstallprompt event fired');
-  });
-  
-  // Handle app installed event
-  window.addEventListener('appinstalled', () => {
-    console.log('App was installed');
-    updateUI('App installed successfully!', 'App installed event fired');
-    
-    // Hide the install button after installation
-    if (installButton) {
-      installButton.style.display = 'none';
-    }
-  });
-  
-  // Check if the app is already installed
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                      (navigator as any).standalone;
-  
-  if (isStandalone) {
-    if (installButton) installButton.style.display = 'none';
-    updateUI('App is installed and running in standalone mode', 'Running in standalone mode');
-  } else if (installButton) {
-    updateUI('Installation not available in this context', 'No installation event fired');
+    // Initial UI update
+    updateUI('Click the button above to install this PWA', 'Waiting for installation event...');
   }
 </script>
