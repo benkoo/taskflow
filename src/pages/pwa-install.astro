@@ -1,0 +1,124 @@
+---
+// PWA Installation Page
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import InstallButton from '../components/pwa/InstallButton';
+
+const currentPath = '/pwa-install';
+---
+
+<Layout title="Install TaskFlow PWA">
+  <Nav currentPath={currentPath} />
+  
+  <main class="min-h-screen bg-gray-50">
+    <div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div class="bg-white shadow overflow-hidden rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Install TaskFlow</h1>
+            <p class="mt-2 text-lg text-gray-600">Get the best experience by installing our app on your device</p>
+          </div>
+
+          <div class="mt-8 bg-blue-50 p-6 rounded-lg border-l-4 border-blue-400 mb-8">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                  Install TaskFlow on your device for a better experience. You'll be able to use it even when you're offline.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-lg border border-gray-200 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">Installation Instructions</h2>
+            
+            <div class="space-y-6">
+              <div class="flex items-start">
+                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span class="text-blue-600 font-bold">1</span>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-medium text-gray-900">Click the install button</h3>
+                  <p class="mt-1 text-gray-600">
+                    Click the install button below to add TaskFlow to your home screen.
+                  </p>
+                  <div class="mt-4">
+                    <InstallButton client:load className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Or install manually:</h3>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-900 mb-2">On Android/Chrome:</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                      <li>Tap the menu button (⋮) in the top-right corner</li>
+                      <li>Select "Add to Home screen" or "Install app"</li>
+                      <li>Confirm the installation when prompted</li>
+                    </ol>
+                  </div>
+                  
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-900 mb-2">On iOS/Safari:</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                      <li>Tap the share button (square with arrow up)</li>
+                      <li>Select "Add to Home Screen"</li>
+                      <li>Tap "Add" in the top-right corner</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-lg font-medium text-gray-900">Why install the app?</h3>
+                <div class="mt-2 text-sm text-gray-600 space-y-2">
+                  <p>• Work offline without an internet connection</p>
+                  <p>• Faster loading times with local caching</p>
+                  <p>• Receive push notifications for updates</p>
+                  <p>• Easy access from your home screen</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+            <a href="/" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+              <svg class="mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+              </svg>
+              Back to Home
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  /* Add any custom styles here if needed */
+  .install-button {
+    transition: all 0.2s ease-in-out;
+  }
+  .install-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+</style>

@@ -7,6 +7,9 @@ interface Props {
 // Extract props
 const { title = 'PWA Install Demo' } = Astro.props as Props;
 
+// Import PWA provider
+import PWAProvider from '../components/pwa/PWAProvider.astro';
+
 // Extend the Navigator interface to include standalone
 declare global {
   interface Navigator {
@@ -61,6 +64,8 @@ declare global {
     </style>
   </head>
   <body class="min-h-screen bg-gray-50">
-    <slot />
+    <PWAProvider>
+      <slot />
+    </PWAProvider>
   </body>
 </html>

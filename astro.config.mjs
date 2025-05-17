@@ -1,14 +1,14 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import { VitePWA } from 'vite-plugin-pwa';
-import react from '@astrojs/react'; // REMOVE THIS LINE
-import tailwind from '@astrojs/tailwind'; // REMOVE THIS LINE
+import react from '@astrojs/react';
+import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
   integrations: [
-    // react(), // Keep or remove based on previous step
-    tailwind(), // REMOVE THIS LINE
+    tailwind(),
+    react()
   ],
   vite: {
     plugins: [

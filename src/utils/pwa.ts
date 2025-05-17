@@ -1,19 +1,13 @@
 // Minimal PWA implementation with TypeScript
+import type { BeforeInstallPromptEvent } from '../types/pwa';
 
-// Define the BeforeInstallPromptEvent type
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[];
-  readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
-}
-
-// Extend Window interface
+// Extend Window interface to include our custom properties
 declare global {
   interface Window {
+    // PWA installation
     deferredPrompt: BeforeInstallPromptEvent | null;
+    handleInstallClick(): Promise<void>;
+    beforeInstallPromptEvent?: BeforeInstallPromptEvent;
   }
 }
 

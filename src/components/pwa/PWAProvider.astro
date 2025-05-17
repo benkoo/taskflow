@@ -1,105 +1,176 @@
 ---
 // This component initializes PWA functionality
 // It handles service worker registration and PWA installation
----
 
+declare global {
+  interface Window {
+    notificationManager: {
+      requestPermission(): Promise<NotificationPermission>;
+      showNotification(options: { title: string; [key: string]: any }): Promise<void>;
+    } | null;
+    refreshApp: () => void;
+  }
+}
+
+// PWA Provider - Handles service worker and PWA functionality
+---
 <slot />
 
 <script>
-  // Check if the app is running in standalone mode
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                      (navigator as any).standalone ||
-                      (document.referrer && document.referrer.includes('android-app://'));
-  
-  console.log('PWA running in standalone mode:', isStandalone);
+  // This script will run on the client side
+  (function() {
+    // Define variables with proper typing
+    let notificationManager: Window['notificationManager'] = null;
+    let registerServiceWorker: (() => Promise<ServiceWorkerRegistration | null>) | null = null;
 
-  // Handle service worker messages and state
-  if ('serviceWorker' in navigator) {
-    // Log service worker state changes
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      console.log('Message from service worker:', event.data);
-    });
+    // Make refreshApp available globally
+    window.refreshApp = () => {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        // Send a message to the service worker to skip waiting and activate
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+      }
+    };
 
-    // Log when a new service worker is installed
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('New service worker activated, reloading...');
-      window.location.reload();
-    });
+    // Initialize PWA functionality
+    async function initializePWA() {
+      if (!registerServiceWorker) {
+        console.warn('Service worker registration function not available');
+        return;
+      }
 
-    // Check if the service worker is already controlling the page
-    if (navigator.serviceWorker.controller) {
-      console.log('Service Worker is controlling the page');
-    } else {
-      console.log('No Service Worker is controlling the page, registering...');
-      
-      // Register the service worker
-      navigator.serviceWorker.register('/sw.js', { scope: '/' })
-        .then((registration) => {
-          console.log('Service Worker registered with scope:', registration.scope);
+      try {
+        // Register service worker
+        const registration = await registerServiceWorker();
+        
+        if (!registration) {
+          console.warn('Failed to register service worker');
+          return;
+        }
+
+        // Log service worker state changes
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          const message = event.data;
+          console.log('Message from service worker:', message);
           
-          // Check if the service worker is actually controlling the page
-          if (navigator.serviceWorker.controller) {
-            console.log('Service Worker is now controlling the page');
+          // Handle notification actions from service worker
+          if (message && typeof message === 'object' && 'type' in message) {
+            const msg = message as { type: string; notificationId?: string; action?: string };
+            if (msg.type === 'NOTIFICATION_CLICK' && msg.action) {
+              console.log('Notification action:', { 
+                notificationId: msg.notificationId, 
+                action: msg.action 
+              });
+              
+              // Handle notification actions
+              switch (msg.action) {
+                case 'view':
+                  // Handle view action
+                  break;
+                case 'snooze':
+                  // Handle snooze action
+                  break;
+                default:
+                  console.log('Unknown notification action:', msg.action);
+              }
+            }
+          }
+        });
+
+        // Handle service worker updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (!newWorker) return;
+          
+          newWorker.addEventListener('statechange', () => {
+            console.log('Service Worker state changed:', newWorker.state);
+            
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New update available
+              console.log('New content is available; please refresh.');
+              // You can show a notification or UI element to prompt the user to refresh
+            } else if (newWorker.state === 'activated') {
+              console.log('Service Worker activated');
+              // New service worker activated, refresh to take control of all clients
+              window.location.reload();
+            }
+          });
+        });
+
+        // Check for updates on page load
+        if (registration.waiting) {
+          console.log('A new service worker is waiting to activate');
+        }
+
+        // Check for updates periodically (every hour)
+        setInterval(() => {
+          registration.update().catch((error: Error) => {
+            console.error('Error checking for service worker updates:', error);
+          });
+        }, 60 * 60 * 1000); // Check every hour
+
+        // Initialize push notifications when the service worker is ready
+        if ('PushManager' in window && notificationManager) {
+          try {
+            // Request notification permission if not already granted
+            if (Notification.permission !== 'granted') {
+              console.log('Requesting notification permission...');
+              await notificationManager.requestPermission();
+            }
+          } catch (error) {
+            console.error('Error initializing push notifications:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing PWA:', error);
+      }
+    }
+
+    // Initialize when the component mounts
+    document.addEventListener('astro:page-load', () => {
+      // Import notification manager with proper type checking
+      type NotificationManagerType = Window['notificationManager'];
+      type NotificationManagerModule = {
+        default?: NotificationManagerType;
+        notificationManager?: NotificationManagerType;
+      };
+
+      import('../../utils/notificationManager')
+        .then((module: unknown) => {
+          const mod = module as NotificationManagerModule;
+          // Handle both default and named exports
+          const manager = mod.default || mod.notificationManager;
+          if (manager) {
+            notificationManager = manager;
+            window.notificationManager = manager;
+            console.log('Notification manager initialized');
           } else {
-            console.log('Service Worker registered but not controlling the page yet');
+            console.warn('Notification manager not found in module');
           }
         })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
+        .catch((error: Error) => {
+          console.error('Failed to initialize notification manager:', error);
         });
-    }
-  } else {
-    console.warn('Service workers are not supported in this browser');
-    
-    // Show a message to the user
-    const installButton = document.getElementById('install-button');
-    const installInstructions = document.getElementById('install-instructions');
-    
-    if (installButton && installInstructions) {
-      installButton.style.display = 'none';
-      installInstructions.textContent = 'This browser does not support PWA installation. Please try a modern browser like Chrome, Edge, or Firefox.';
-    }
-  }
+      
+      // Import service worker utilities
+      import('../../utils/notifications')
+        .then(module => {
+          if (module && typeof module.registerServiceWorker === 'function') {
+            registerServiceWorker = module.registerServiceWorker;
+            console.log('Service worker utilities initialized');
+            initializePWA();
+          } else {
+            console.warn('registerServiceWorker function not found in notifications module');
+          }
+        })
+        .catch((error: Error) => {
+          console.error('Failed to initialize service worker utilities:', error);
+        });
+    });
 
-  // Check if the browser is Firefox
-  const isFirefox = window.navigator.userAgent.includes('Firefox');
-  
-  // Handle the beforeinstallprompt event
-  window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('beforeinstallprompt event fired');
-    
-    // For non-Firefox browsers, handle the installation prompt ourselves
-    if (!isFirefox) {
-      // Prevent Chrome 67 and earlier from automatically showing the prompt
-      e.preventDefault();
-      
-      // Cast the event to BeforeInstallPromptEvent
-      const beforeInstallPromptEvent = e as unknown as BeforeInstallPromptEvent;
-      
-      // Stash the event so it can be triggered later
-      window.deferredPrompt = beforeInstallPromptEvent;
-      
-      // Show the install button if it exists (it will be hidden for Firefox)
-      const installButton = document.getElementById('install-button');
-      if (installButton) {
-        installButton.style.display = 'inline-flex';
-      }
-    } else {
-      // For Firefox, we'll let the browser handle the installation prompt
-      console.log('Firefox detected - using browser-native installation prompt');
-    }
-  });
-
-  // Log successful installation
-  window.addEventListener('appinstalled', () => {
-    console.log('App was installed successfully');
-    // Hide the install button after installation
-    const installButton = document.getElementById('install-button');
-    if (installButton) {
-      installButton.style.display = 'none';
-    }
-    
-    // Clear the deferredPrompt so it can be garbage collected
-    window.deferredPrompt = undefined;
-  });
+    // Listen for the appinstalled event
+    window.addEventListener('appinstalled', (event: Event) => {
+      console.log('App was installed', event);
+      // You can track installations or show a thank you message
+    });
+  })();
 </script>

@@ -1,92 +1,73 @@
 # TaskFlow - A Modern PWA Task Manager
 
-A feature-rich Progressive Web App (PWA) for task management, built with Astro, React, and Tailwind CSS. This application demonstrates best practices for building installable PWAs with offline capabilities.
+A feature-rich Progressive Web Application (PWA) for task management, built with Astro, React, and Tailwind CSS. This application demonstrates best practices for building installable PWAs with offline capabilities.
 
 ## ✨ Features
 
-- 📱 **Installable PWA** with custom installation prompt
-- 🔄 **Offline-first** with service worker and Workbox
-- 🎨 **Responsive design** built with Tailwind CSS
-- ⚡ **Fast loading** with code splitting and optimizations
-- 📦 **Modern tech stack**: Astro, React, TypeScript
-- 🔒 **Type-safe** with TypeScript
-- 🛠 **Developer-friendly** with hot module replacement
+- 📱 **Progressive Web App** - Installable on desktop and mobile devices
+- ⚡ **Fast & Reliable** - Works offline with service workers
+- 🎨 **Responsive Design** - Works on all screen sizes
+- 🔄 **Real-time Updates** - Stay in sync across devices
+- 📝 **Task Management** - Create, update, and organize your tasks
+- 🚀 **Modern Tech Stack**: Astro, React, TypeScript, and Tailwind CSS
 
-## 🚀 Quick Start
+## 🚀 Installation
+
+### Web Browser
+
+1. Open [TaskFlow](https://your-app-url.com) in Chrome, Edge, or Firefox
+2. Look for the install button in the address bar (Chrome/Edge) or the app menu (Firefox)
+3. Click "Install" and follow the prompts
+
+### Mobile Devices
+
+#### Android (Chrome)
+1. Open TaskFlow in Chrome
+2. Tap the menu (three dots) in the top-right corner
+3. Tap "Add to Home screen"
+4. Confirm by tapping "Add"
+
+#### iOS (Safari)
+1. Open TaskFlow in Safari
+2. Tap the share button (box with an arrow)
+3. Tap "Add to Home Screen"
+4. Tap "Add" in the top-right corner
+
+## 🛠️ Development
 
 ### Prerequisites
 
-- Node.js 18 or later
-- npm or yarn
+- Node.js 16+ and npm
 
-### Installation
+### Getting Started
 
-1. Clone the repository:
-   ```sh
+1. Clone the repository
+   ```bash
    git clone https://github.com/your-username/taskflow.git
    cd taskflow
    ```
 
-2. Install dependencies:
-   ```sh
+2. Install dependencies
+   ```bash
    npm install
    ```
 
-3. Start the development server:
-   ```sh
+3. Start the development server
+   ```bash
    npm run dev
    ```
 
-4. Open your browser and navigate to `http://localhost:4321`
+4. Open [http://localhost:4321](http://localhost:4321) in your browser
 
-## 🏗 Project Structure
+### Building for Production
 
-```
-/
-├── public/                 # Static files
-│   ├── favicon.ico         # Favicon
-│   ├── favicon.svg         # SVG favicon
-│   ├── icons/              # App icons for PWA
-│   ├── manifest.json       # Web App Manifest
-│   └── styles/             # Global styles
-├── src/
-│   ├── assets/            # Static assets
-│   ├── components/         # Reusable components
-│   │   ├── pwa/           # PWA-specific components
-│   │   │   ├── InstallButton.astro  # PWA install button
-│   │   │   └── PWAProvider.astro    # PWA initialization
-│   │   └── Welcome.astro  # Welcome component
-│   ├── layouts/           # Layout components
-│   │   └── Layout.astro   # Main layout
-│   ├── pages/             # Application pages
-│   │   └── index.astro    # Home page
-│   ├── styles/            # Global styles
-│   ├── types/             # TypeScript type definitions
-│   └── utils/             # Utility functions
-│       ├── notifications.ts  # Web Push Notifications
-│       ├── pwa.ts          # PWA utilities
-│       └── registerServiceWorker.ts  # Service worker registration
-├── astro.config.mjs        # Astro configuration
-├── tailwind.config.mjs     # Tailwind CSS configuration
-├── tsconfig.json           # TypeScript configuration
-└── package.json            # Project dependencies
+```bash
+npm run build
 ```
 
-## 🛠 Development
+This will create a production-ready build in the `dist` directory.
 
-### Available Scripts
-
-| Command                   | Action                                           |
-| :------------------------ | :---------------------------------------------- |
-| `npm install`            | Install dependencies                            |
-| `npm run dev`            | Start development server at `localhost:4321`    |
-| `npm run build`          | Build for production to `./dist/`               |
-| `npm run preview`        | Preview production build locally                |
-| `npm run astro ...`      | Run Astro CLI commands                         |
-| `npm run check`          | Check for TypeScript errors                     |
-
-
-## 📱 PWA Features
+## 🌟 PWA Features
 
 ### Installation
 
@@ -118,102 +99,72 @@ This PWA works best in modern browsers that support:
 - ✅ Mozilla Firefox (Latest)
 - ✅ Safari 15+ (macOS, iOS)
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18 or later
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-   ```sh
-   git clone <repository-url>
-   cd taskflow
-   ```
-
-2. Install dependencies:
-   ```sh
-   npm install
-   ```
-
-3. Start the development server:
-   ```sh
-   npm run dev
-   ```
-
-4. Open your browser and navigate to `http://localhost:4321`
-
-## 🛠 Project Structure
+## 🏗 Project Structure
 
 ```
 /
 ├── public/                 # Static files
 │   ├── favicon.ico         # Favicon
 │   ├── favicon.svg         # SVG favicon
+│   ├── icons/              # App icons for PWA
 │   ├── manifest.json       # Web App Manifest
 │   └── sw.js              # Service Worker
 ├── src/
-│   ├── components/        # Reusable components
-│   │   └── pwa/           # PWA-specific components
-│   │       ├── InstallButton.astro  # PWA install button
-│   │       └── PWAProvider.astro    # PWA initialization
-│   ├── layouts/
-│   │   └── Layout.astro  # Main layout component
-│   ├── pages/
-│   │   └── index.astro  # Home page
-│   └── utils/
-│       └── registerServiceWorker.ts  # Service worker registration
-├── astro.config.mjs        # Astro configuration
-├── tailwind.config.js      # Tailwind CSS configuration
-└── package.json            # Project dependencies
+│   ├── assets/            # Static assets
+│   ├── components/         # Reusable components
+│   │   ├── pwa/           # PWA-specific components
+│   │   │   ├── InstallButton.astro  # PWA install button
+│   │   │   └── PWAProvider.astro    # PWA initialization
+│   ├── layouts/           # Layout components
+│   │   └── Layout.astro   # Main layout
+│   ├── pages/             # Application pages
+│   │   └── index.astro    # Home page
+│   ├── styles/            # Global styles
+│   ├── types/             # TypeScript type definitions
+│   │   └── pwa.ts         # PWA type definitions and interfaces
+│   └── utils/             # Utility functions
+│       ├── notifications.ts  # Web Push Notifications
+│       ├── pwa.ts          # PWA utilities
+│       └── storage.ts      # Local storage utilities
+└── astro.config.mjs       # Astro configuration
 ```
 
-## 🧞 Available Scripts
+## 📝 Available Scripts
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Install dependencies                            |
-| `npm run dev`             | Start development server at `localhost:4321`     |
-| `npm run build`           | Build for production to `./dist/`                |
-| `npm run preview`         | Preview production build locally                 |
-| `npm run astro ...`       | Run Astro CLI commands                          |
-| `npm run check`           | Check for TypeScript errors                      |
+| Command                   | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `npm install`            | Install dependencies                          |
+| `npm run dev`            | Start development server                     |
+| `npm run build`          | Build for production to `./dist/`            |
+| `npm run preview`        | Preview production build locally              |
+| `npm run astro ...`      | Run Astro CLI commands                       |
+| `npm run check`          | Check for TypeScript errors                   |
+| `npm run format`         | Format code with Prettier                     |
+| `npm run lint`           | Run ESLint to check for code style issues     |
+| `npm run lint:fix`       | Fix auto-fixable ESLint issues                |
+| `npm run test`           | Run tests                                     |
+| `npm run test:watch`     | Run tests in watch mode                      |
 
-## PWA Features
+## 🤝 Contributing
 
-### Installation
+Contributions are welcome! Please follow these steps to contribute:
 
-1. The app will show an install button when it's installable
-2. Click the button to install the PWA on your device
-3. Once installed, the app will work offline
-
-### Service Worker
-
-- Caches core assets for offline use
-- Automatically updates when new content is available
-- Provides a seamless offline experience
-
-## Browser Support
-
-This PWA works best in modern browsers that support:
-
-- Service Workers
-- Web App Manifest
-- ES Modules
-- Async/Await
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+1. Fork the repository
+2. Create a new branch for your feature or bugfix
+3. Make your changes and commit them with descriptive messages
+4. Push your changes to your fork
+5. Open a Pull Request
 
 ## 🙏 Acknowledgments
 
 - [Astro](https://astro.build/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [PWA Documentation](https://web.dev/progressive-web-apps/)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Built with ❤️ by [Your Name]
