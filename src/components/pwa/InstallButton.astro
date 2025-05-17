@@ -6,25 +6,52 @@ interface Props {
 }
 
 const { className = '', showInstructions = true } = Astro.props;
+
+// Check if the user is on Firefox
+const isFirefox = typeof window !== 'undefined' && window.navigator.userAgent.includes('Firefox');
 ---
 
-<button 
-  id="install-button" 
-  class:list={[
-    'bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition-colors',
-    className
-  ]}
-  aria-label="Install app"
->
-  Install App
-</button>
+{!isFirefox && (
+  <>
+    <button 
+      id="install-button" 
+      class:list={[
+        'bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition-colors',
+        className
+      ]}
+      aria-label="Install app"
+    >
+      Install App
+    </button>
 
-{showInstructions && (
-  <div class="mt-2 space-y-2">
-    <p class="text-sm text-gray-600" id="install-instructions">
-      Click the button above to install this PWA
-    </p>
-    <p class="text-xs text-gray-500" id="debug-info"></p>
+    {showInstructions && (
+      <div class="mt-2 space-y-2">
+        <p class="text-sm text-gray-600" id="install-instructions">
+          Click the button above to install this PWA
+        </p>
+        <p class="text-xs text-gray-500" id="debug-info"></p>
+      </div>
+    )}
+  </>
+)}
+
+{isFirefox && showInstructions && (
+  <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm text-blue-700">
+          To install this PWA in Firefox, click the install icon in the address bar
+          <svg class="inline-block h-4 w-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" />
+          </svg>
+        </p>
+      </div>
+    </div>
   </div>
 )}
 
@@ -33,6 +60,9 @@ const { className = '', showInstructions = true } = Astro.props;
   const installButton = document.getElementById('install-button');
   const installInstructions = document.getElementById('install-instructions');
   const debugInfo = document.getElementById('debug-info');
+  
+  // Check if the browser is Firefox
+  const isFirefox = window.navigator.userAgent.includes('Firefox');
   
   // Function to update the UI
   function updateUI(message: string, debugMessage: string = '') {
@@ -54,8 +84,8 @@ const { className = '', showInstructions = true } = Astro.props;
     if (installButton) {
       installButton.style.display = 'none';
     }
-  } else {
-    // Handle install button click
+  } else if (!isFirefox) {
+    // Handle install button click (only for non-Firefox browsers)
     if (installButton) {
       installButton.onclick = async () => {
         const deferredPrompt = (window as any).deferredPrompt;
@@ -90,9 +120,12 @@ const { className = '', showInstructions = true } = Astro.props;
           updateUI('Error during installation', 'Check console for details');
         }
       };
+      
+      // Initial UI update for non-Firefox browsers
+      updateUI('Click the button above to install this PWA', 'Waiting for installation event...');
     }
-    
-    // Initial UI update
-    updateUI('Click the button above to install this PWA', 'Waiting for installation event...');
+  } else {
+    // For Firefox, we don't show the install button
+    updateUI('Use the install icon in the address bar to install this PWA', 'Firefox detected - using browser-native installation');
   }
 </script>
